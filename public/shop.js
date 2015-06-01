@@ -42,7 +42,20 @@ var cupcakeShop = {
 
   */
   addFlavor: function(type) {
+   //check if type NOT exists in inventory
+   //this one worked for me...
+    if (!(type in cupcakeShop.inventory)) {
+    //if yes, add the type
+      return cupcakeShop.inventory[type] = 0
 
+/*    //wanted to try this one, but nothing yet 
+       if (_.find(cupcakeShop.inventory, type) === undefined) {
+        return cupcakeShop.inventory[type] = 0
+      } else {
+
+        return cupcakeShop.inventory[type] */
+
+      } 
   },
 
   /*
@@ -51,14 +64,27 @@ var cupcakeShop = {
       If there are cupcakes of that flavor, throw them away. (Eww, red velvet.)
   */
   removeFlavor: function(type) {
-
+    //check if type exists
+    if (type in cupcakeShop.inventory) {
+    //remove
+      delete cupcakeShop.inventory[type]
+    }
   },
 
   /*
     shop.listFlavors: Returns a list of the flavors for sale.
   */
   listFlavors: function() {
+   /*  var flavorList = []
+  if (cupcakeShop.inventory.length > 0) {
+      var flavorList = cupcakeShop.inventory.map(flavorList.push(cupcakeShop.inventory))
+      console.log(cupcakeShop.inventory)
+    }
+    */
 
+    return _.keys(cupcakeShop.inventory)
+
+    //return flavorList
   },
 
   /*
@@ -68,7 +94,11 @@ var cupcakeShop = {
       If that that cupcake flavor is available, returns 0.
   */
   showStock: function(flavor) {
-
+   if (flavor in cupcakeShop.inventory) {
+      return cupcakeShop.inventory[flavor]
+    } else {
+      return 0
+    }
   },
 
 
@@ -82,6 +112,10 @@ var cupcakeShop = {
       If that flavor DOESN'T exist in the inventory, do nothing.
   */
   restock: function(flavor, count) {
+    if (flavor in cupcakeShop.inventory) {
+      return cupcakeShop.inventory[flavor] += count
+
+    }
 
   },
 
@@ -98,6 +132,18 @@ var cupcakeShop = {
   */
   makeSale: function(flavor) {
 
+    if ((flavor in cupcakeShop.inventory) && (cupcakeShop.inventory[flavor] > 0)) {
+      cupcakeShop.inventory[flavor] -= 1
+
+
+      cupcakeShop.register += cupcakeShop.price
+
+      return true
+
+    } else {
+      return false
+    }
+
   },
 
   /*
@@ -107,6 +153,8 @@ var cupcakeShop = {
       (Think of this like depositing the day's take in the bank at night.)
   */
   reconcile: function() {
+    return cupcakeShop.bank += cupcakeShop.register, cupcakeShop.register = 0
+
 
   },
 
@@ -115,7 +163,7 @@ var cupcakeShop = {
       (Note: This shop does not ever sell cookies. It is a cupcake shop.)
   */
   sellsCookies: function() {
-    
+    return false    
   }
 
 }
