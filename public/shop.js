@@ -17,6 +17,8 @@ var cupcakeShop = {
   */
   inventory: {},
 
+  retired: [],
+
   /*
     shop.price: A number, representing the price of a single cupcake.
   */
@@ -62,11 +64,16 @@ var cupcakeShop = {
     shop.removeFlavor: Accepts a string as a parameter, representing a cupcake flavor.
       Removes that flavor from the inventory of cupcake flavors available for sale.
       If there are cupcakes of that flavor, throw them away. (Eww, red velvet.)
+
+      //add to retired
+      //do not duplicate in retired
   */
   removeFlavor: function(type) {
     //check if type exists
     if (type in cupcakeShop.inventory) {
-    //remove
+    //send inventory type to retired
+      cupcakeShop.retired = _.filter(cupcakeShop.retired, function(item){return item !== type})
+      cupcakeShop.retired.push(type)
       delete cupcakeShop.inventory[type]
     }
   },
@@ -164,10 +171,59 @@ var cupcakeShop = {
   */
   sellsCookies: function() {
     return false    
-  }
+  },
 
-}
 
+
+
+/* sells cookie at a number value discounted by a percentage. reduce inventory and add to register */
+discountSale: function (flavor, discount) {
+   /*if ((flavor in cupcakeShop.inventory) && (cupcakeShop.inventory[flavor] > 0)) {
+
+      cupcakeShop.price -= (Math.floor((cupcakeShop.price * discount) * 100) / 100)
+      cupcakeShop.inventory[flavor] -= 1
+      cupcakeShop.register += cupcakeShop.price
+
+      return true
+
+    } else {
+      return false
+    }*/
+
+    //don't know if all this is necessary, but figured it's a way to round to the cent??
+    cupcakeShop.price -= (Math.floor((cupcakeShop.price * discount) * 100) / 100)    
+    return cupcakeShop.makeSale(flavor)
+
+  },
+
+//console.log(cupcakeShop.price) // back to three, because only local change
+
+/*
+Takes a single number and adds that to all the flavors
+*/
+
+bulkRestock: function(number) {
+
+
+//cupcakeShop.restock(object key,)
+
+
+ // cupcakeShop[inventory].map(cupcakeShop[restock](cupcakeShop.inventory][i], number))
+
+ // cupcakeShop.inventory = _.mapObject(cupcakeShop.inventory, cupcakeShop.restock(cupcakeShop.inventory, number))
+  
+  cupcakeShop.inventory = _.mapObject(cupcakeShop.inventory, function(val, key) {
+    return val + number})
+  //console.log(cupcakeShop.inventory)
+  },
+
+
+
+
+
+
+//end of object. no touchy
+ } 
 
 /*
   This function exists for testing purposes. It's called before every test
@@ -182,4 +238,5 @@ var resetShop = function() {
   cupcakeShop.price = 3;
   cupcakeShop.register = 0;
   cupcakeShop.bank = 0;
+  cupcakeShop.retired = [];
 }
