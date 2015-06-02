@@ -43,13 +43,12 @@ var cupcakeShop = {
       overwrite its existing inventory.
 
   */
-  addFlavor: function(type) {
+  addFlavor: function(type, price) {
    //check if type NOT exists in inventory
    //this one worked for me...
     if (!(type in cupcakeShop.inventory)) {
     //if yes, add the type
-      return cupcakeShop.inventory[type] = 0
-
+       cupcakeShop.inventory[type] = { price: price, quantity: 0 }
 /*    //wanted to try this one, but nothing yet 
        if (_.find(cupcakeShop.inventory, type) === undefined) {
         return cupcakeShop.inventory[type] = 0
@@ -59,6 +58,7 @@ var cupcakeShop = {
 
       } 
   },
+
 
   /*
     shop.removeFlavor: Accepts a string as a parameter, representing a cupcake flavor.
@@ -72,7 +72,8 @@ var cupcakeShop = {
     //check if type exists
     if (type in cupcakeShop.inventory) {
     //send inventory type to retired
-      cupcakeShop.retired = _.filter(cupcakeShop.retired, function(item){return item !== type})
+    //  cupcakeShop.retired = _.filter(cupcakeShop.retired, function(item){return item !== type})
+      cupcakeShop.retired = _.reject(cupcakeShop.retired, function(item){return item === type})
       cupcakeShop.retired.push(type)
       delete cupcakeShop.inventory[type]
     }
@@ -102,7 +103,7 @@ var cupcakeShop = {
   */
   showStock: function(flavor) {
    if (flavor in cupcakeShop.inventory) {
-      return cupcakeShop.inventory[flavor]
+      return cupcakeShop.inventory[flavor].quantity
     } else {
       return 0
     }
@@ -120,7 +121,7 @@ var cupcakeShop = {
   */
   restock: function(flavor, count) {
     if (flavor in cupcakeShop.inventory) {
-      return cupcakeShop.inventory[flavor] += count
+      return cupcakeShop.inventory[flavor].quantity += count
 
     }
 
@@ -139,11 +140,11 @@ var cupcakeShop = {
   */
   makeSale: function(flavor) {
 
-    if ((flavor in cupcakeShop.inventory) && (cupcakeShop.inventory[flavor] > 0)) {
-      cupcakeShop.inventory[flavor] -= 1
+    if ((flavor in cupcakeShop.inventory) && (cupcakeShop.inventory[flavor].quantity > 0)) {
+      cupcakeShop.inventory[flavor].quantity -= 1
 
 
-      cupcakeShop.register += cupcakeShop.price
+      cupcakeShop.register += cupcakeShop.inventory[flavor].price
 
       return true
 
@@ -178,25 +179,16 @@ var cupcakeShop = {
 
 /* sells cookie at a number value discounted by a percentage. reduce inventory and add to register */
 discountSale: function (flavor, discount) {
-   /*if ((flavor in cupcakeShop.inventory) && (cupcakeShop.inventory[flavor] > 0)) {
-
-      cupcakeShop.price -= (Math.floor((cupcakeShop.price * discount) * 100) / 100)
-      cupcakeShop.inventory[flavor] -= 1
-      cupcakeShop.register += cupcakeShop.price
-
-      return true
-
-    } else {
-      return false
-    }*/
 
     //don't know if all this is necessary, but figured it's a way to round to the cent??
-    cupcakeShop.price -= (Math.floor((cupcakeShop.price * discount) * 100) / 100)    
+    cupcakeShop.inventory[flavor].price -= (Math.floor((cupcakeShop.inventory[flavor].price * discount) * 100) / 100)    
+
     return cupcakeShop.makeSale(flavor)
 
   },
 
-//console.log(cupcakeShop.price) // back to three, because only local change
+
+
 
 /*
 Takes a single number and adds that to all the flavors
@@ -211,10 +203,18 @@ bulkRestock: function(number) {
  // cupcakeShop[inventory].map(cupcakeShop[restock](cupcakeShop.inventory][i], number))
 
  // cupcakeShop.inventory = _.mapObject(cupcakeShop.inventory, cupcakeShop.restock(cupcakeShop.inventory, number))
-  
-  cupcakeShop.inventory = _.mapObject(cupcakeShop.inventory, function(val, key) {
-    return val + number})
-  //console.log(cupcakeShop.inventory)
+
+/* newer technique but doesn't work  
+ cupcakeShop.inventory = _.mapObject(cupcakeShop.inventory, function(val, key) {
+    return cupcakeShop.inventory[key].quantity[val] + number})
+ console.log(cupcakeShop.inventory)
+*/
+
+  for (key in cupcakeShop.inventory) {
+     cupcakeShop.inventory[key].quantity += number
+  }
+return cupcakeShop.inventory
+
   },
 
 

@@ -5,24 +5,37 @@ describe("Kate's Cupcake Shop LLC. A Delaware Company", function(){
     it("exists", function(){
       expect(cupcakeShop.addFlavor).to.be.a("function");
     });
-
-    it("can create new flavors", function(){
+    
+    it("can create new flavors as objects", function(){
       resetShop();
 
-      cupcakeShop.addFlavor("chocolate");
+      cupcakeShop.addFlavor("chocolate", 5);
       expect(cupcakeShop.inventory).to.have.keys("chocolate");
-      cupcakeShop.addFlavor("vanilla");
+      cupcakeShop.addFlavor("vanilla", 2);
       expect(cupcakeShop.inventory).to.have.keys("vanilla", "chocolate");
-      cupcakeShop.addFlavor("strawberry");
+      cupcakeShop.addFlavor("strawberry", 9);
       expect(cupcakeShop.inventory).to.have.keys("vanilla", "chocolate", "strawberry");
 
-      expect(cupcakeShop.inventory).to.deep.equal({
-        chocolate: 0,
-        vanilla: 0,
-        strawberry: 0
-      })
 
     });
+
+    it("includes price and empty quantity keys", function(){
+      resetShop();
+
+      cupcakeShop.addFlavor("chocolate", 3);
+      expect(cupcakeShop.inventory).to.have.keys("chocolate");
+      cupcakeShop.addFlavor("vanilla", 3);
+      expect(cupcakeShop.inventory).to.have.keys("vanilla", "chocolate");
+      cupcakeShop.addFlavor("twist", 4);
+      expect(cupcakeShop.inventory).to.have.keys("vanilla", "chocolate", "twist");
+
+      expect(cupcakeShop.inventory).to.deep.equal({
+        chocolate: {price: 3, quantity: 0},
+        vanilla: {price: 3, quantity: 0},
+        twist: {price: 4, quantity: 0}
+      });
+    });
+
 
     it("doesn't overwrite existing flavors", function(){
       resetShop();
@@ -46,11 +59,11 @@ describe("Kate's Cupcake Shop LLC. A Delaware Company", function(){
 
     it("removes flavors", function(){
       resetShop();
-
+//update to match new inventory
       cupcakeShop.inventory = {
-        chocolate: 10,
-        vanilla: 5,
-        "red velvet": 15
+        chocolate: {price: 3, quantity: 10},
+        vanilla: {price: 3, quantity: 3},
+        "red velvet": {price: 5, quantity: 7}
       }
 
       cupcakeShop.removeFlavor("red velvet"); // so gross
@@ -62,10 +75,11 @@ describe("Kate's Cupcake Shop LLC. A Delaware Company", function(){
     it ("adds flavor to retired", function(){
       resetShop();
 
+//update to new inventory
       cupcakeShop.inventory = {
-        coconut: 3,
-        blueberry: 5,
-        rainbow: 1
+        coconut: {price: 3, quantity: 3},
+        blueberry: {price: 3, quantity: 5},
+        rainbow: {price: 10, quantity: 1}
       }
 
       cupcakeShop.removeFlavor("rainbow");
@@ -77,9 +91,10 @@ describe("Kate's Cupcake Shop LLC. A Delaware Company", function(){
     it ("doesn't duplicate retired flavors", function(){
       resetShop();
 
+//update to new inventory
       cupcakeShop.inventory = {
-        coconut: 1,
-        blueberry: 3
+        coconut: {price: 3, quantity: 1},
+        blueberry: {price: 3, quantity: 3}
       }
 
       cupcakeShop.retired = [
@@ -111,11 +126,12 @@ describe("Kate's Cupcake Shop LLC. A Delaware Company", function(){
     it("lists cupcake flavors", function(){
       resetShop();
 
+//update to new inventory
       cupcakeShop.inventory = {
-        chocolate: 10,
-        vanilla: 5,
-        strawberry: 14,
-        "red velvet": 0
+        chocolate: {price: 3, quantity: 10},
+        vanilla: {price: 2, quantity: 5},
+        strawberry: {price: 3, quantity: 14},
+        "red velvet": {price: 5, quantity: 0}
       }
 
       expect(cupcakeShop.listFlavors()).to.be.same.members([
@@ -135,7 +151,20 @@ describe("Kate's Cupcake Shop LLC. A Delaware Company", function(){
       expect(cupcakeShop.showStock).to.be.a("function");
     });
 
-    it("shows stock of existing flavors", function(){
+    it("shows object-based stock of existing flavors", function(){
+      resetShop();
+
+      cupcakeShop.inventory = {
+        vanilla: {price: 3, quantity: 20},
+        chocolate: {price: 3, quantity: 0},
+      }
+
+      expect(cupcakeShop.showStock("vanilla")).to.equal(20)
+      expect(cupcakeShop.showStock("chocolate")).to.equal(0)
+    })
+
+// Will fail; needs to go deeper for quantity
+    it("shows old stock of existing flavors", function(){
       resetShop();
 
       cupcakeShop.inventory = {
@@ -147,7 +176,18 @@ describe("Kate's Cupcake Shop LLC. A Delaware Company", function(){
       expect(cupcakeShop.showStock("chocolate")).to.equal(0)
     })
 
-    it("returns 0 for non-existent flavors", function(){
+    it("in new format returns 0 for non-existent flavors", function(){
+      resetShop();
+
+      cupcakeShop.inventory = {
+        vanilla: {price: 3, quantity: 20}
+      }
+
+      expect(cupcakeShop.showStock("strawberry")).to.equal(0)
+    })
+
+// Will fail; needs to go deeper for quantity - actually, will probably work, zero is zero
+    it("in old format returns 0 for non-existent flavors", function(){
       resetShop();
 
       cupcakeShop.inventory = {
@@ -165,7 +205,27 @@ describe("Kate's Cupcake Shop LLC. A Delaware Company", function(){
       expect(cupcakeShop.restock).to.be.a("function");
     });
 
-    it("adds to stock of existing flavors", function(){
+    it("adds to new object stock of existing flavors", function(){
+      resetShop();
+
+      cupcakeShop.inventory = {
+        chocolate: {price: 3, quantity: 8},
+        vanilla: {price: 3, quantity: 4},
+        strawberry: {price: 4, quantity: 0}
+      }
+
+      cupcakeShop.restock("vanilla", 10)
+      cupcakeShop.restock("strawberry", 3)
+      
+      expect(cupcakeShop.inventory).to.deep.equal({
+        chocolate: {price: 3, quantity: 8},
+        vanilla: {price: 3, quantity: 14},
+        strawberry: {price: 4, quantity: 3}
+      })
+    });
+
+// Will fail; needs to go deeper for quantity 
+    it("FAIL adds to stock of existing flavors", function(){
       resetShop();
 
       cupcakeShop.inventory = {
@@ -188,15 +248,15 @@ describe("Kate's Cupcake Shop LLC. A Delaware Company", function(){
       resetShop();
 
       cupcakeShop.inventory = {
-        chocolate: 8,
-        vanilla: 4
+        chocolate: {price: 3, quantity: 8},
+        vanilla: {price: 3, quantity: 4}
       }
 
       cupcakeShop.restock("rhubarb", 6)
       
       expect(cupcakeShop.inventory).to.deep.equal({
-        chocolate: 8,
-        vanilla: 4
+        chocolate: {price: 3, quantity: 8},
+        vanilla: {price: 3, quantity: 4}
       })
     });
 
@@ -208,7 +268,26 @@ describe("Kate's Cupcake Shop LLC. A Delaware Company", function(){
       expect(cupcakeShop.makeSale).to.be.a("function");
     });
 
-    it("should make a sale", function(){
+    it("should make a NEW sale", function(){
+      resetShop();
+
+      cupcakeShop.inventory = {
+        chocolate: {price: 4, quantity: 5},
+        strawberry: {price: 3, quantity: 3}
+      }
+
+      var saleResult = cupcakeShop.makeSale("chocolate");
+
+      expect(saleResult).to.equal(true);
+      expect(cupcakeShop.register).to.equal(4);
+      expect(cupcakeShop.inventory).to.deep.equal({
+        chocolate: {price: 4, quantity: 4},
+        strawberry: {price: 3, quantity: 3}
+      })
+    });
+
+
+    it("FAIL OLD should make a sale", function(){
       resetShop();
 
       cupcakeShop.inventory = {
@@ -230,8 +309,8 @@ describe("Kate's Cupcake Shop LLC. A Delaware Company", function(){
       resetShop();
 
       cupcakeShop.inventory = {
-        chocolate: 5,
-        strawberry: 0
+        chocolate: {price: 3, quantity: 5},
+        strawberry: {price: 4, quantity: 0}
       }
 
       var saleResult = cupcakeShop.makeSale("strawberry");
@@ -239,8 +318,8 @@ describe("Kate's Cupcake Shop LLC. A Delaware Company", function(){
       expect(saleResult).to.equal(false);
       expect(cupcakeShop.register).to.equal(0);
       expect(cupcakeShop.inventory).to.deep.equal({
-        chocolate: 5,
-        strawberry: 0
+        chocolate: {price: 3, quantity: 5},
+        strawberry: {price: 4, quantity: 0}
       })
 
     });
@@ -249,8 +328,8 @@ describe("Kate's Cupcake Shop LLC. A Delaware Company", function(){
       resetShop();
 
       cupcakeShop.inventory = {
-        chocolate: 5,
-        strawberry: 3
+        chocolate: {price: 4, quantity: 5},
+        strawberry: {price: 3, quantity: 3}
       }
 
       var saleResult = cupcakeShop.makeSale("vanilla");
@@ -258,8 +337,8 @@ describe("Kate's Cupcake Shop LLC. A Delaware Company", function(){
       expect(saleResult).to.equal(false);
       expect(cupcakeShop.register).to.equal(0);
       expect(cupcakeShop.inventory).to.deep.equal({
-        chocolate: 5,
-        strawberry: 3
+        chocolate: {price: 4, quantity: 5},
+        strawberry: {price: 3, quantity: 3}
       })
     });
 
@@ -307,11 +386,12 @@ describe("Kate's Cupcake Shop LLC. A Delaware Company", function(){
       expect(cupcakeShop.discountSale).to.be.a("function");
     });
 
-    it("should apply a discount", function(){
+    it("should apply a NEW discount", function(){
         resetShop();
 
+//updated inventory
         cupcakeShop.inventory = {
-          vanilla: 1,
+          vanilla: {price: 3, quantity: 1},
         }
 
         var saleResult = cupcakeShop.discountSale("vanilla", 1/3);
@@ -322,7 +402,26 @@ describe("Kate's Cupcake Shop LLC. A Delaware Company", function(){
     });
 
 
-    it("should make a sale", function(){
+    it("should make a NEW sale", function(){
+        resetShop();
+
+        cupcakeShop.inventory = {
+          chocolate: {price: 7, quantity: 7},
+          strawberry: {price: 3, quantity: 4}
+        }
+
+        var saleResult = cupcakeShop.discountSale("chocolate", 0.50);
+
+        expect(saleResult).to.equal(true);
+        expect(cupcakeShop.register).to.equal(3.5);
+        expect(cupcakeShop.inventory).to.deep.equal({
+          chocolate: {price: 3.5, quantity: 6},
+          strawberry: {price: 3, quantity: 4}
+        })
+      });
+
+
+    it("FAIL should make a sale", function(){
         resetShop();
 
         cupcakeShop.inventory = {
@@ -343,9 +442,10 @@ describe("Kate's Cupcake Shop LLC. A Delaware Company", function(){
       it("should not sell an out of stock cupcake", function(){
         resetShop();
 
+//updated inventory to match new format
         cupcakeShop.inventory = {
-          chocolate: 5,
-          strawberry: 0
+          chocolate: {price: 3, quantity: 5},
+          strawberry: {price: 4, quantity:0}
         }
 
         var saleResult = cupcakeShop.makeSale("strawberry", 0.10);
@@ -353,18 +453,18 @@ describe("Kate's Cupcake Shop LLC. A Delaware Company", function(){
         expect(saleResult).to.equal(false);
         expect(cupcakeShop.register).to.equal(0);
         expect(cupcakeShop.inventory).to.deep.equal({
-          chocolate: 5,
-          strawberry: 0
+          chocolate: {price: 3, quantity: 5},
+          strawberry: {price: 4, quantity:0}
         })
 
       });
 
-      it("should not sell an non-existent flavor", function(){
+      it("should not sell a non-existent flavor", function(){
         resetShop();
-
+//updated inventory to match new format
         cupcakeShop.inventory = {
-          chocolate: 5,
-          strawberry: 3
+          chocolate: {price: 3, quantity: 5},
+          strawberry: {price: 4, quantity: 3}
         }
 
         var saleResult = cupcakeShop.makeSale("vanilla", 0.4);
@@ -372,8 +472,8 @@ describe("Kate's Cupcake Shop LLC. A Delaware Company", function(){
         expect(saleResult).to.equal(false);
         expect(cupcakeShop.register).to.equal(0);
         expect(cupcakeShop.inventory).to.deep.equal({
-          chocolate: 5,
-          strawberry: 3
+          chocolate: {price: 3, quantity:5},
+          strawberry: {price: 4, quantity: 3}
         })
       });
   });
@@ -385,21 +485,22 @@ describe("Kate's Cupcake Shop LLC. A Delaware Company", function(){
       expect(cupcakeShop.bulkRestock).to.be.a("function");
     });
 
+//updated inventory to match new format
     it("should restock all available flavors", function() {
       resetShop;
 
       cupcakeShop.inventory = {
-        vanilla: 13,
-        strawberry: 3,
-        banana: 37
+        vanilla: {price: 3, quantity: 13},
+        strawberry: {price: 4, quantity: 3},
+        banana: {price: 2, quantity: 37}
       }
 
       cupcakeShop.bulkRestock(5);
 
       expect(cupcakeShop.inventory).to.deep.equal({
-        vanilla: 18,
-        strawberry: 8,
-        banana: 42
+        vanilla: {price: 3, quantity: 18},
+        strawberry: {price: 4, quantity: 8},
+        banana: {price: 2, quantity: 42}
         }) 
     });
 
